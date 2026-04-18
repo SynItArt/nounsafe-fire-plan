@@ -2,925 +2,574 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>NOUnsafe — 공동주택 소방계획서 작성 도우미</title>
-<meta name="description" content="공동주택 소방계획서를 단계별로 쉽게 작성하세요. NOUnsafe AI 기반 안전관리 플랫폼">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg: #F7F6F3;
-  --card: #FFFFFF;
-  --primary: #C62828;
-  --primary-light: #EF5350;
-  --primary-bg: #FFEBEE;
-  --accent: #0D47A1;
-  --accent-light: #E3F2FD;
-  --text: #1A1A1A;
-  --text-sub: #555;
-  --border: #D5D5D5;
-  --success: #2E7D32;
-  --success-bg: #E8F5E9;
-  --warn: #E65100;
-  --warn-bg: #FFF3E0;
-  --radius: 12px;
-  --shadow: 0 2px 12px rgba(0,0,0,0.06);
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 16px;
-  line-height: 1.65;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ─── HEADER ─── */
-.header {
-  background: linear-gradient(135deg, #B71C1C 0%, #C62828 40%, #D84315 100%);
-  color: #fff;
-  padding: 22px 16px;
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(183,28,28,0.3);
-}
-.header h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
-.header p { font-size: 14px; opacity: 0.92; margin-top: 2px; font-weight: 400; }
-
-/* ─── STEPPER ─── */
-.stepper {
-  display: flex;
-  gap: 2px;
-  padding: 12px 8px;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  justify-content: center;
-  -webkit-overflow-scrolling: touch;
-}
-.stepper::-webkit-scrollbar { display: none; }
-.step-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 10px;
-  border-radius: 10px;
-  min-width: 54px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 2px solid transparent;
-  flex-shrink: 0;
-}
-.step-item.active { background: var(--primary-bg); border-color: var(--primary); }
-.step-item.done { background: var(--success-bg); }
-.step-icon { font-size: 20px; }
-.step-label { font-size: 11px; margin-top: 3px; white-space: nowrap; font-weight: 500; color: var(--text-sub); }
-.step-item.active .step-label { color: var(--primary); font-weight: 700; }
-
-/* ─── CONTENT ─── */
-.content { padding: 20px 16px; max-width: 740px; margin: 0 auto; }
-.section-title {
-  font-size: 20px; font-weight: 800; color: var(--primary);
-  margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
-}
-.section-desc { font-size: 14px; color: var(--text-sub); margin-bottom: 20px; }
-
-/* ─── CARD ─── */
-.card {
-  background: var(--card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
-.card-title {
-  font-size: 16px; font-weight: 700; color: var(--accent);
-  margin-bottom: 14px; padding-bottom: 10px;
-  border-bottom: 2px solid var(--accent-light);
-}
-
-/* ─── FORM ELEMENTS ─── */
-.field { margin-bottom: 14px; }
-.field label {
-  display: block; font-size: 14px; font-weight: 600;
-  color: var(--text); margin-bottom: 4px;
-}
-.field input, .field select {
-  width: 100%; padding: 12px 14px; font-size: 16px;
-  border: 2px solid var(--border); border-radius: 10px;
-  outline: none; transition: border 0.2s;
-  background: #FAFAF8; font-family: inherit;
-  -webkit-appearance: none;
-}
-.field input:focus, .field select:focus { border-color: var(--primary); background: #fff; }
-.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23555' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-
-.row { display: flex; gap: 12px; flex-wrap: wrap; }
-.col { flex: 1 1 150px; min-width: 0; }
-
-/* ─── CHECKBOX ─── */
-.chk {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px; border-radius: 10px;
-  border: 2px solid var(--border); cursor: pointer;
-  transition: all 0.15s; font-size: 15px; font-weight: 500;
-  user-select: none; margin-bottom: 6px;
-  -webkit-tap-highlight-color: transparent;
-}
-.chk.on { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
-.chk.compact { padding: 8px 12px; font-size: 14px; }
-.chk-mark { font-size: 18px; flex-shrink: 0; }
-
-/* ─── EQUIPMENT GRID ─── */
-.equip-cat { margin-bottom: 20px; }
-.equip-cat-title {
-  font-size: 15px; font-weight: 700; color: var(--accent);
-  padding: 8px 14px; background: var(--accent-light);
-  border-radius: 8px; margin-bottom: 8px;
-}
-.equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
-
-/* ─── BUTTONS ─── */
-.nav-bar {
-  display: flex; gap: 12px; padding: 20px 16px;
-  max-width: 740px; margin: 0 auto;
-}
-.btn {
-  flex: 1; padding: 16px; font-size: 17px; font-weight: 700;
-  border-radius: var(--radius); cursor: pointer;
-  border: none; font-family: inherit;
-  transition: transform 0.1s, box-shadow 0.2s;
-  -webkit-tap-highlight-color: transparent;
-}
-.btn:active { transform: scale(0.97); }
-.btn-primary {
-  background: var(--primary); color: #fff;
-  box-shadow: 0 4px 16px rgba(198,40,40,0.3);
-}
-.btn-secondary { background: #fff; color: var(--text); border: 2px solid var(--border); }
-.btn-success {
-  background: var(--success); color: #fff;
-  box-shadow: 0 4px 16px rgba(46,125,50,0.3);
-}
-.btn-feedback {
-  background: linear-gradient(135deg, #1565C0, #0D47A1); color: #fff;
-  box-shadow: 0 4px 16px rgba(13,71,161,0.3);
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-add {
-  padding: 12px 20px; font-size: 15px; font-weight: 600;
-  background: var(--accent-light); color: var(--accent);
-  border: 2px solid var(--accent); border-radius: 10px;
-  cursor: pointer; width: 100%; font-family: inherit;
-}
-.btn-remove {
-  padding: 6px 14px; font-size: 13px; font-weight: 600;
-  background: #FFEBEE; color: #C62828;
-  border: 1px solid #EF9A9A; border-radius: 8px;
-  cursor: pointer; font-family: inherit;
-}
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ─── DONG CARD ─── */
-.dong-card {
-  background: #FAFAF8; border-radius: var(--radius);
-  border: 2px solid var(--border); padding: 16px; margin-bottom: 12px;
-}
-.dong-header {
-  display: flex; justify-content: space-between;
-  align-items: center; margin-bottom: 12px;
-}
-.dong-title { font-size: 16px; font-weight: 700; color: var(--accent); }
-
-/* ─── PREVIEW ─── */
-.preview-box {
-  background: #1A1A2E; color: #E8E8E8;
-  padding: 20px; border-radius: var(--radius);
-  font-family: 'D2Coding', 'Courier New', monospace;
-  font-size: 13px; line-height: 1.75;
-  white-space: pre-wrap; word-break: break-all;
-  max-height: 480px; overflow-y: auto;
-  border: 3px solid var(--warn);
-}
-
-/* ─── HERO ─── */
-.hero {
-  background: linear-gradient(135deg, #FFF3E0 0%, #FFCCBC 100%);
-  border-radius: 16px; padding: 28px 20px;
-  text-align: center; margin-bottom: 20px;
-  border: 2px solid #FF8A65;
-}
-.hero-icon { font-size: 52px; margin-bottom: 8px; }
-.hero-title { font-size: 24px; font-weight: 900; color: var(--primary); margin-bottom: 6px; }
-.hero-desc { font-size: 15px; color: var(--text-sub); }
-
-/* ─── FEATURE GRID ─── */
-.feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
-.feat-card {
-  background: #fff; border-radius: var(--radius); padding: 16px;
-  text-align: center; border: 1px solid var(--border);
-}
-.feat-icon { font-size: 32px; margin-bottom: 6px; }
-.feat-title { font-size: 15px; font-weight: 700; }
-.feat-desc { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
-
-/* ─── INFO BOXES ─── */
-.info-box {
-  border-radius: var(--radius); padding: 16px 18px;
-  margin-bottom: 14px; font-size: 14px; line-height: 1.7;
-  border: 1px solid;
-}
-.info-box.green { background: var(--success-bg); border-color: #A5D6A7; color: var(--success); }
-.info-box.orange { background: var(--warn-bg); border-color: #FFE082; color: var(--warn); }
-.info-box.blue { background: var(--accent-light); border-color: #90CAF9; color: var(--accent); }
-
-/* ─── STATS ─── */
-.stats-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
-.stat { text-align: center; min-width: 80px; }
-.stat-label { font-size: 13px; color: var(--text-sub); }
-.stat-value { font-size: 18px; font-weight: 800; color: var(--success); }
-
-/* ─── BADGE ─── */
-.badge {
-  display: inline-block; padding: 4px 12px;
-  border-radius: 20px; font-size: 12px; font-weight: 700;
-}
-
-/* ─── FEEDBACK BANNER ─── */
-.feedback-banner {
-  background: linear-gradient(135deg, #0D47A1, #1565C0);
-  color: #fff; border-radius: var(--radius);
-  padding: 20px; margin-bottom: 16px;
-  text-align: center; box-shadow: 0 4px 20px rgba(13,71,161,0.2);
-}
-.feedback-banner h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
-.feedback-banner p { font-size: 14px; opacity: 0.9; margin-bottom: 14px; }
-.feedback-btn {
-  display: inline-block; padding: 14px 32px;
-  background: #fff; color: #0D47A1;
-  font-size: 16px; font-weight: 700;
-  border-radius: 50px; text-decoration: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: transform 0.15s;
-}
-.feedback-btn:hover { transform: scale(1.03); }
-
-/* ─── FOOTER ─── */
-.footer {
-  text-align: center; padding: 24px 16px;
-  font-size: 13px; color: var(--text-sub);
-  border-top: 1px solid var(--border); margin-top: 20px;
-}
-
-/* ─── HIDDEN ─── */
-.hidden { display: none !important; }
-
-/* ─── MOBILE ─── */
-@media (max-width: 480px) {
-  .equip-grid { grid-template-columns: 1fr; }
-  .feat-grid { grid-template-columns: repeat(2, 1fr); }
-  .header h1 { font-size: 22px; }
-  .hero-title { font-size: 20px; }
-  .section-title { font-size: 18px; }
-  .stats-row { gap: 10px; }
-}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--c1:#C62828;--c1l:#FFEBEE;--c2:#0D47A1;--c2l:#E3F2FD;--bg:#F5F4F0;--card:#FFF;--tx:#1A1A1A;--tx2:#555;--bd:#D5D5D5;--ok:#2E7D32;--okl:#E8F5E9;--warn:#E65100;--warnl:#FFF3E0;--r:12px}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);font-size:16px;line-height:1.6;min-height:100vh}
+.hd{background:linear-gradient(135deg,#B71C1C,#D84315);color:#fff;padding:18px 16px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.hd h1{font-size:24px;font-weight:900}
+.hd p{font-size:13px;opacity:.9;margin-top:2px}
+/* Progress */
+.prog{background:#fff;padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.prog-bar{flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:var(--c1);border-radius:4px;transition:width .4s}
+.prog-txt{font-size:13px;font-weight:700;color:var(--c1);min-width:60px;text-align:right}
+/* Steps nav */
+.snav{display:flex;gap:2px;padding:10px 8px;background:#fff;border-bottom:1px solid var(--bd);overflow-x:auto;justify-content:center}
+.snav::-webkit-scrollbar{display:none}
+.si{display:flex;flex-direction:column;align-items:center;padding:6px 10px;border-radius:8px;min-width:52px;cursor:pointer;border:2px solid transparent;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.si.on{background:var(--c1l);border-color:var(--c1)}
+.si.done{background:var(--okl)}
+.si-i{font-size:18px}.si-l{font-size:10px;margin-top:2px;white-space:nowrap;font-weight:500;color:var(--tx2)}
+.si.on .si-l{color:var(--c1);font-weight:700}
+/* Content */
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+.panel{display:none}.panel.show{display:block}
+.stit{font-size:20px;font-weight:800;color:var(--c1);margin-bottom:4px}
+.sdsc{font-size:14px;color:var(--tx2);margin-bottom:16px}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.ctit{font-size:15px;font-weight:700;color:var(--c2);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--c2l)}
+/* Form */
+.fg{margin-bottom:12px}
+.fg>label{display:block;font-size:13px;font-weight:600;margin-bottom:3px}
+.fg input,.fg select{width:100%;padding:11px 12px;font-size:16px;border:2px solid var(--bd);border-radius:8px;outline:0;background:#FAFAF8;font-family:inherit;transition:border .15s}
+.fg input:focus,.fg select:focus{border-color:var(--c1);background:#fff}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.fg{flex:1 1 140px;min-width:0}
+/* Checkboxes */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:5px;margin-bottom:8px}
+.cb{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;border:2px solid var(--bd);cursor:pointer;font-size:14px;font-weight:500;user-select:none;-webkit-tap-highlight-color:transparent;transition:all .12s}
+.cb:active{transform:scale(.97)}
+.cb input{display:none}
+.cb.on{background:var(--c1l);border-color:var(--c1);color:var(--c1)}
+.cb-m{font-size:16px;flex-shrink:0}
+.cat{margin-bottom:16px}
+.cat-t{font-size:14px;font-weight:700;color:var(--c2);padding:7px 12px;background:var(--c2l);border-radius:6px;margin-bottom:6px}
+/* Buttons */
+.bnav{display:flex;gap:10px;padding:16px;max-width:720px;margin:0 auto}
+.btn{flex:1;padding:15px;font-size:16px;font-weight:700;border-radius:var(--r);cursor:pointer;border:none;font-family:inherit;transition:transform .1s;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(.97)}
+.btn1{background:var(--c1);color:#fff;box-shadow:0 3px 12px rgba(198,40,40,.25)}
+.btn2{background:#fff;color:var(--tx);border:2px solid var(--bd)}
+.btn-ok{background:var(--ok);color:#fff;box-shadow:0 3px 12px rgba(46,125,50,.25)}
+.btn-fb{background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-add{width:100%;padding:11px;font-size:14px;font-weight:600;background:var(--c2l);color:var(--c2);border:2px solid var(--c2);border-radius:8px;cursor:pointer;font-family:inherit;margin-top:6px}
+.btn-rm{padding:5px 12px;font-size:12px;font-weight:600;background:#FFEBEE;color:#C62828;border:1px solid #EF9A9A;border-radius:6px;cursor:pointer;font-family:inherit}
+/* Dong */
+.dong{background:#FAFAF8;border-radius:var(--r);border:2px solid var(--bd);padding:14px;margin-bottom:10px}
+.dong-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.dong-t{font-size:15px;font-weight:700;color:var(--c2)}
+/* Hero */
+.hero{background:linear-gradient(135deg,#FFF3E0,#FFCCBC);border-radius:16px;padding:24px 18px;text-align:center;margin-bottom:16px;border:2px solid #FF8A65}
+.hero-i{font-size:48px;margin-bottom:6px}
+.hero-t{font-size:22px;font-weight:900;color:var(--c1)}
+.hero-d{font-size:14px;color:var(--tx2);margin-top:4px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:14px}
+.fc{background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid var(--bd)}
+.fc-i{font-size:28px;margin-bottom:4px}
+.fc-t{font-size:14px;font-weight:700}
+.fc-d{font-size:12px;color:var(--tx2);margin-top:2px}
+/* Info */
+.ib{border-radius:var(--r);padding:14px 16px;margin-bottom:12px;font-size:14px;line-height:1.7;border:1px solid}
+.ib.g{background:var(--okl);border-color:#A5D6A7;color:var(--ok)}
+.ib.o{background:var(--warnl);border-color:#FFE082;color:var(--warn)}
+.ib.b{background:var(--c2l);border-color:#90CAF9;color:var(--c2)}
+/* Preview stats */
+.stats{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:14px}
+.st{text-align:center;min-width:70px}
+.st-l{font-size:12px;color:var(--tx2)}
+.st-v{font-size:17px;font-weight:800;color:var(--ok)}
+/* Feedback */
+.fbb{background:linear-gradient(135deg,#0D47A1,#1565C0);color:#fff;border-radius:var(--r);padding:18px;text-align:center;margin:14px 0}
+.fbb h3{font-size:17px;font-weight:800;margin-bottom:4px}
+.fbb p{font-size:13px;opacity:.9;margin-bottom:12px}
+.fb-a{display:inline-block;padding:12px 28px;background:#fff;color:#0D47A1;font-size:15px;font-weight:700;border-radius:50px;text-decoration:none}
+/* Preview */
+.pbox{background:#1A1A2E;color:#E0E0E0;padding:16px;border-radius:var(--r);font-family:'D2Coding',monospace;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto;border:3px solid var(--warn)}
+/* Footer */
+.ft{text-align:center;padding:20px 16px;font-size:12px;color:var(--tx2);border-top:1px solid var(--bd);margin-top:16px}
+/* Loading overlay */
+.loading{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:999;display:none}
+.loading.on{display:flex}
+.loading-box{background:#fff;border-radius:16px;padding:30px 40px;text-align:center}
+.spinner{width:40px;height:40px;border:4px solid #eee;border-top-color:var(--c1);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:480px){.cg{grid-template-columns:1fr}.fgrid{grid-template-columns:repeat(2,1fr)}.hero-t{font-size:19px}.stit{font-size:18px}}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <h1>🔥 NOUnsafe</h1>
-  <p>공동주택 소방계획서 작성 도우미</p>
+<div class="loading" id="loading"><div class="loading-box"><div class="spinner"></div><div style="font-weight:700">DOCX 파일 생성 중...</div></div></div>
+
+<div class="hd"><h1>🔥 NOUnsafe</h1><p>공동주택 소방계획서 작성 도우미</p></div>
+<div class="prog"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div><div class="prog-txt" id="progTxt">0/5</div></div>
+<div class="snav" id="snav"></div>
+
+<div class="wrap" id="panels">
+
+<!-- ══════ STEP 0: 시작 ══════ -->
+<div class="panel show" id="p0">
+<div class="hero">
+<div class="hero-i">🔥</div>
+<div class="hero-t">소방계획서 작성 도우미</div>
+<div class="hero-d">공동주택 소방계획서를 단계별로 쉽게 작성하세요</div>
+<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#E3F2FD;color:#0D47A1;margin-top:8px">MVP Beta v0.1 · 무료</span>
+</div>
+<div class="fgrid">
+<div class="fc"><div class="fc-i">🏢</div><div class="fc-t">건축물 현황</div><div class="fc-d">서식 1.1 자동완성</div></div>
+<div class="fc"><div class="fc-i">🧯</div><div class="fc-t">소방시설</div><div class="fc-d">서식 1.4 체크리스트</div></div>
+<div class="fc"><div class="fc-i">🚪</div><div class="fc-t">피난·방화</div><div class="fc-d">서식 1.5 자동완성</div></div>
+<div class="fc"><div class="fc-i">📄</div><div class="fc-t">DOCX 다운로드</div><div class="fc-d">워드 파일 자동생성</div></div>
+</div>
+<div class="ib g" style="margin-top:14px"><strong>📌 작성 대상</strong><br>「화재의 예방 및 안전관리에 관한 법률」 제24조에 따른 소방계획서 핵심 서식 3종을 단계별로 입력하면 <strong>워드(DOCX) 파일로 자동 생성</strong>합니다.</div>
+<div class="ib o"><strong>⚠️ 안내</strong><br>본 도구는 소방계획서 작성 보조 도구입니다. 입력 데이터는 서버에 저장되지 않으며, 최종 소방계획서는 관련 법규에 따라 확인·보완하시기 바랍니다.</div>
+<div class="fbb"><h3>💬 사용 후 피드백을 남겨주세요</h3><p>여러분의 의견이 더 나은 도구를 만듭니다</p><a class="fb-a" href="https://docs.google.com/forms/d/1haFo2R8pQfxvKTVJaBCqEQCr3hyy7pAiMFmIpCjezAs/viewform" target="_blank">📝 피드백 설문 (1분)</a></div>
 </div>
 
-<!-- STEPPER -->
-<div class="stepper" id="stepper"></div>
+<!-- ══════ STEP 1: 건축물 현황 ══════ -->
+<div class="panel" id="p1">
+<div class="stit">🏢 서식 1.1 건축물 일반현황</div>
+<div class="sdsc">건축물대장을 참고하여 작성합니다</div>
 
-<!-- CONTENT -->
-<div class="content" id="content"></div>
-
-<!-- NAV -->
-<div class="nav-bar" id="nav"></div>
-
-<!-- FOOTER -->
-<div class="footer">
-  <div style="font-weight:700">NOUnsafe — AI 기반 안전관리 SaaS 플랫폼</div>
-  <div style="margin-top:4px">© 2026 NOUnsafe · 문의: cafe.naver.com/114er</div>
-  <div style="margin-top:2px;font-size:12px;opacity:0.7">소방설비기사(전기/기계) 신대식 | 의용소방대원 6년</div>
+<div class="card"><div class="ctit">기본 정보</div>
+<div class="fg"><label>명칭 *</label><input id="b_name" placeholder="예: ○○아파트"></div>
+<div class="fg"><label>도로명 주소 *</label><input id="b_addr" placeholder="예: 서울특별시 구로구 ..."></div>
+<div class="row">
+<div class="fg"><label>대표자(책임자)</label><input id="b_rep" placeholder="성명"></div>
+<div class="fg"><label>연락처</label><input id="b_repTel" placeholder="000-0000-0000"></div>
 </div>
+<div class="row">
+<div class="fg"><label>소방안전관리자</label><input id="b_sm" placeholder="성명"></div>
+<div class="fg"><label>연락처</label><input id="b_smTel" placeholder="000-0000-0000"></div>
+</div>
+</div>
+
+<div class="card"><div class="ctit">시설 현황</div>
+<div class="row">
+<div class="fg"><label>대상물 급수</label><select id="b_grade"><option>특급</option><option selected>1급</option><option>2급</option><option>3급</option></select></div>
+<div class="fg"><label>사용승인일</label><input id="b_approval" placeholder="2020.06.30"></div>
+</div>
+<div class="row">
+<div class="fg"><label>연면적 (㎡)</label><input id="b_area" type="number" placeholder="70000"></div>
+<div class="fg"><label>건축면적 (㎡)</label><input id="b_bArea" type="number" placeholder="3000"></div>
+</div>
+<div class="row">
+<div class="fg"><label>지하 층수</label><input id="b_uf" type="number" placeholder="2"></div>
+<div class="fg"><label>지상 층수</label><input id="b_af" type="number" placeholder="30"></div>
+</div>
+<div class="row">
+<div class="fg"><label>높이 (m)</label><input id="b_height" type="number" placeholder="80"></div>
+<div class="fg"><label>구조</label><select id="b_struct"><option>철근콘크리트</option><option>철골철근콘크리트</option><option>철골조</option><option>벽돌조</option></select></div>
+</div>
+</div>
+
+<div class="card"><div class="ctit">승강기 · 주차장 · 계단</div>
+<div style="font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:6px">승강기</div>
+<div class="cg" style="grid-template-columns:repeat(3,1fr)">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="el_pass"><span class="cb-m">☐</span>승용</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="el_emer"><span class="cb-m">☐</span>비상용</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="el_evac"><span class="cb-m">☐</span>피난용</label>
+</div>
+<div style="font-size:13px;font-weight:600;color:var(--tx2);margin:8px 0 6px">주차장</div>
+<div class="cg" style="grid-template-columns:repeat(3,1fr)">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="pk_in"><span class="cb-m">☐</span>옥내</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="pk_out"><span class="cb-m">☐</span>옥외</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="pk_ev"><span class="cb-m">☐</span>전기차충전소</label>
+</div>
+<div style="font-size:13px;font-weight:600;color:var(--tx2);margin:8px 0 6px">계단</div>
+<div class="cg">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="st_spe"><span class="cb-m">☐</span>특별피난계단</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="st_dir"><span class="cb-m">☐</span>직통계단</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="st_eva"><span class="cb-m">☐</span>피난계단</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="st_out"><span class="cb-m">☐</span>옥외계단</label>
+</div>
+</div>
+
+<div class="card"><div class="ctit">운영 현황 · 화재보험</div>
+<div class="row">
+<div class="fg"><label>근무인원 (명)</label><input id="b_wk" type="number"></div>
+<div class="fg"><label>거주인원 (명)</label><input id="b_res" type="number"></div>
+<div class="fg"><label>최대수용 (명)</label><input id="b_max" type="number"></div>
+</div>
+<div class="row">
+<div class="fg"><label>보험사</label><input id="b_ins" placeholder="○○보험"></div>
+<div class="fg"><label>가입기간</label><input id="b_insP" placeholder="2025.01~2025.12"></div>
+</div>
+</div>
+</div>
+
+<!-- ══════ STEP 2: 동별 현황 ══════ -->
+<div class="panel" id="p2">
+<div class="stit">🏗️ 서식 1.2.2 공동주택 세부현황</div>
+<div class="sdsc">동별 세부현황을 작성합니다</div>
+<div id="dongList"></div>
+<button class="btn-add" onclick="addDong()">＋ 동 추가</button>
+</div>
+
+<!-- ══════ STEP 3: 소방시설 ══════ -->
+<div class="panel" id="p3">
+<div class="stit">🧯 서식 1.4 소방시설 현황</div>
+<div class="sdsc">설치된 소방시설에 체크하세요</div>
+<div id="equipList"></div>
+</div>
+
+<!-- ══════ STEP 4: 피난·방화 ══════ -->
+<div class="panel" id="p4">
+<div class="stit">🚪 서식 1.5 피난·방화시설 현황</div>
+<div class="sdsc">피난·방화시설 및 제연, 방염 현황을 작성합니다</div>
+
+<div class="card"><div class="ctit">피난시설 — 계단</div>
+<div class="cg">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_s1"><span class="cb-m">☐</span>직통계단</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_s2"><span class="cb-m">☐</span>피난계단</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_s3"><span class="cb-m">☐</span>특별피난계단</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_s4"><span class="cb-m">☐</span>옥외계단</label>
+</div></div>
+
+<div class="card"><div class="ctit">피난시설 — 기타</div>
+<div class="cg">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_f1"><span class="cb-m">☐</span>대피공간</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_f2"><span class="cb-m">☐</span>경량칸막이</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_f3"><span class="cb-m">☐</span>피난안전구역</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_f4"><span class="cb-m">☐</span>옥상광장</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="ev_f5"><span class="cb-m">☐</span>헬리포트</label>
+</div>
+<div class="row" style="margin-top:8px">
+<div class="fg"><label>피난층 위치</label><input id="ev_floor" value="1층"></div>
+<div class="fg"><label>출입구 수 (개소)</label><input id="ev_exit" type="number"></div>
+</div></div>
+
+<div class="card"><div class="ctit">방화구획</div>
+<div class="cg">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fc_area" checked><span class="cb-m">☑</span>면적별</label>
+<label class="cb on" onclick="togCb(this)"><input type="checkbox" data-id="fc_floor" checked><span class="cb-m">☑</span>층별</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fc_use"><span class="cb-m">☐</span>용도별</label>
+</div>
+<div style="font-size:13px;font-weight:600;color:var(--tx2);margin:8px 0 6px">방화구획 설비</div>
+<div class="cg">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fe_door"><span class="cb-m">☐</span>방화문</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fe_shut"><span class="cb-m">☐</span>방화셔터</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fe_scrn"><span class="cb-m">☐</span>방화스크린</label>
+</div></div>
+
+<div class="card"><div class="ctit">제연구획</div>
+<div class="cg">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="sc_room"><span class="cb-m">☐</span>거실 제연</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="sc_hall"><span class="cb-m">☐</span>전실 제연</label>
+</div></div>
+
+<div class="card"><div class="ctit">방염</div>
+<div class="fg"><label>방염물품명</label><input id="fl_items" placeholder="벽지, 커튼, 카펫 등"></div>
+<div class="row">
+<div class="fg"><label>위치</label><input id="fl_loc" placeholder="전층"></div>
+<div class="fg"><label>성적서 비치장소</label><input id="fl_cert" placeholder="관리사무실"></div>
+</div></div>
+
+<div class="card"><div class="ctit">내부마감재료</div>
+<div class="cg">
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fn_1"><span class="cb-m">☐</span>불연재료</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fn_2"><span class="cb-m">☐</span>준불연재료</label>
+<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="fn_3"><span class="cb-m">☐</span>난연재료</label>
+</div></div>
+</div>
+
+<!-- ══════ STEP 5: 완성 ══════ -->
+<div class="panel" id="p5">
+<div class="stit">📋 소방계획서 완성</div>
+<div class="sdsc">작성 내용을 확인하고 다운로드하세요</div>
+<div class="card" style="background:var(--okl);border-color:#A5D6A7"><div class="stats" id="rstats"></div></div>
+<div style="display:flex;gap:10px;margin-bottom:14px">
+<button class="btn btn-ok" style="flex:1" onclick="downloadDocx()">📄 워드(DOCX) 다운로드</button>
+<button class="btn btn2" style="flex:1" onclick="downloadTxt()">📥 텍스트 다운로드</button>
+</div>
+<div class="pbox" id="preview"></div>
+<div class="fbb" style="margin-top:14px"><h3>🙏 작성 완료! 피드백을 남겨주세요</h3><p>1분 설문으로 의견을 남겨주시면 큰 힘이 됩니다</p><a class="fb-a" href="https://docs.google.com/forms/d/1haFo2R8pQfxvKTVJaBCqEQCr3hyy7pAiMFmIpCjezAs/viewform" target="_blank">📝 피드백 설문 참여하기</a></div>
+<div class="ib b" style="margin-top:14px"><strong>💡 다음 버전 예정 기능</strong><br>• 자위소방대 편성표 자동 생성 (서식 2장)<br>• 피난계획 자동 작성 (서식 3장)<br>• AI 기반 화재취약장소 분석<br>• HWP 포맷 출력 지원</div>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="bnav" id="bnav"></div>
+<div class="ft"><div style="font-weight:700">NOUnsafe — AI 기반 안전관리 SaaS 플랫폼</div><div style="margin-top:3px">© 2026 NOUnsafe · cafe.naver.com/114er</div></div>
 
 <script>
-// ══════════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════════
+// ─── CONFIG ───
+const STEPS=[{l:"시작",i:"🏠"},{l:"건축물",i:"🏢"},{l:"동별",i:"🏗️"},{l:"소방시설",i:"🧯"},{l:"피난방화",i:"🚪"},{l:"완성",i:"📋"}];
+const EQUIP={"소화설비":["소화기구 및 자동소화장치","옥내소화전설비","옥외소화전설비","스프링클러설비","간이스프링클러설비","화재조기진압용 스프링클러설비","물분무소화설비","미분무소화설비","포소화설비","이산화탄소소화설비","할론소화설비","할로겐화합물 및 불활성기체소화설비","분말소화설비","강화액소화설비","고체에어로졸소화설비"],"경보설비":["단독경보형감지기","비상경보설비","자동화재탐지설비 및 시각경보기","화재알림설비","비상방송설비","통합감시시설","자동화재속보설비","누전경보기","가스누설경보기"],"피난구조설비":["피난기구","인명구조기구","유도등","유도표지","비상조명등","휴대용비상조명등","피난유도선"],"소화용수설비":["상수도소화용수설비","소화수조 및 저수조"],"소화활동설비":["거실제연설비","부속실 등 제연설비","연결송수관설비","연결살수설비","비상콘센트설비","무선통신보조설비","연소방지설비"]};
 
-// ⬇️⬇️⬇️ 여기에 Google Forms URL을 넣으세요 ⬇️⬇️⬇️
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/1haFo2R8pQfxvKTVJaBCqEQCr3hyy7pAiMFmIpCjezAs/viewform";
-// ⬆️⬆️⬆️ 위 URL만 교체하면 피드백 버튼이 바로 연동됩니다 ⬆️⬆️⬆️
+let step=0, dongCount=1;
 
-const STEPS = [
-  { label: "시작", icon: "🏠" },
-  { label: "건축물 현황", icon: "🏢" },
-  { label: "동별 현황", icon: "🏗️" },
-  { label: "소방시설", icon: "🧯" },
-  { label: "피난·방화", icon: "🚪" },
-  { label: "완성", icon: "📋" },
-];
-
-const FIRE_EQUIPMENT = {
-  "소화설비": [
-    "소화기구 및 자동소화장치","옥내소화전설비","옥외소화전설비",
-    "스프링클러설비","간이스프링클러설비","화재조기진압용 스프링클러설비",
-    "물분무소화설비","미분무소화설비","포소화설비",
-    "이산화탄소소화설비","할론소화설비","할로겐화합물 및 불활성기체소화설비",
-    "분말소화설비","강화액소화설비","고체에어로졸소화설비"
-  ],
-  "경보설비": [
-    "단독경보형감지기","비상경보설비","자동화재탐지설비 및 시각경보기",
-    "화재알림설비","비상방송설비","통합감시시설",
-    "자동화재속보설비","누전경보기","가스누설경보기"
-  ],
-  "피난구조설비": [
-    "피난기구","인명구조기구","유도등","유도표지",
-    "비상조명등","휴대용비상조명등","피난유도선"
-  ],
-  "소화용수설비": ["상수도소화용수설비","소화수조 및 저수조"],
-  "소화활동설비": [
-    "거실제연설비","부속실 등 제연설비","연결송수관설비",
-    "연결살수설비","비상콘센트설비","무선통신보조설비","연소방지설비"
-  ]
-};
-
-const EVAC_STAIRS = ["직통계단","피난계단","특별피난계단","옥외계단"];
-const EVAC_FACILITIES = ["대피공간","경량칸막이","피난안전구역","옥상광장","헬리포트"];
-const FIRE_COMP = ["면적별","층별","용도별"];
-const FIRE_COMP_EQUIP = ["방화문","방화셔터","방화스크린"];
-const SMOKE_CTRL = ["거실 제연","전실 제연"];
-const FINISHING = ["불연재료","준불연재료","난연재료"];
-
-// ══════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════
-let currentStep = 0;
-
-let building = {
-  name:"", address:"", rep:"", repTel:"", sm:"", smTel:"",
-  grade:"1급", use:"공동주택", approval:"",
-  area:"", bldgArea:"", uf:"", af:"", height:"",
-  structure:"철근콘크리트", roof:"철근콘크리트",
-  elev: { passenger:false, emergency:false, evacuation:false },
-  park: { indoor:false, outdoor:false, ev:false },
-  stair: { special:false, direct:false, evac:false, outdoor:false },
-  workers:"", residents:"", maxCap:"",
-  insCompany:"", insPeriod:"", insAmount:""
-};
-
-let dongs = [{ name:"101동", uf:"", af:"", area:"", height:"", lines:"", units:"", res:"", stType:"특별피난계단", stCnt:"", eP:"", eE:"", eV:"" }];
-
-let fireEquip = {};
-let evac = {
-  stairs:{}, fac:{}, fc:{}, fe:{}, sc:{}, fin:{},
-  fcExists:true, scExists:true, flamExists:true,
-  flamItems:"", flamLoc:"", flamCert:"",
-  evacFloor:"1층", exitCnt:""
-};
-
-// ══════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════
-const $ = id => document.getElementById(id);
-const h = (tag, attrs, ...children) => {
-  const el = document.createElement(tag);
-  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
-    if (k === 'className') el.className = v;
-    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
-    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
-    else el.setAttribute(k, v);
-  });
-  children.flat().forEach(c => {
-    if (c == null) return;
-    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-  });
-  return el;
-};
-
-function makeField(label, value, onChange, opts={}) {
-  const wrap = h('div', {className:'field'});
-  if (opts.half) wrap.style.flex = '1 1 140px';
-  wrap.appendChild(h('label', null, label));
-  const inp = h('input', { type: opts.type||'text', value: value||'', placeholder: opts.ph||'' });
-  inp.addEventListener('input', e => onChange(e.target.value));
-  wrap.appendChild(inp);
-  return wrap;
+// ─── CHECKBOX TOGGLE (no re-render!) ───
+function togCb(el){
+  const inp=el.querySelector('input');
+  inp.checked=!inp.checked;
+  el.classList.toggle('on',inp.checked);
+  el.querySelector('.cb-m').textContent=inp.checked?'☑':'☐';
 }
 
-function makeSelect(label, value, options, onChange) {
-  const wrap = h('div', {className:'field'});
-  const lbl = h('label', null, label);
-  const sel = h('select');
-  options.forEach(o => { const op = h('option', {value:o}, o); if(o===value) op.selected=true; sel.appendChild(op); });
-  sel.addEventListener('change', e => onChange(e.target.value));
-  wrap.appendChild(lbl);
-  wrap.appendChild(sel);
-  return wrap;
-}
-
-function makeCheck(label, checked, onChange, compact) {
-  const el = h('div', {className: 'chk' + (checked?' on':'') + (compact?' compact':'')});
-  el.appendChild(h('span', {className:'chk-mark'}, checked?'☑':'☐'));
-  el.appendChild(h('span', null, label));
-  el.addEventListener('click', () => { onChange(!checked); render(); });
-  return el;
-}
-
-// ══════════════════════════════════════════
-// RENDER STEPS
-// ══════════════════════════════════════════
-
-function renderStep0() {
-  const el = h('div');
-  // Hero
-  const hero = h('div',{className:'hero'});
-  hero.appendChild(h('div',{className:'hero-icon'},'🔥'));
-  hero.appendChild(h('div',{className:'hero-title'},'소방계획서 작성 도우미'));
-  hero.appendChild(h('div',{className:'hero-desc'},'공동주택 소방계획서를 단계별로 쉽게 작성하세요'));
-  hero.appendChild(h('span',{className:'badge',style:{background:'#E3F2FD',color:'#0D47A1',marginTop:'8px'}},'MVP Beta v0.1 · 무료'));
-  el.appendChild(hero);
-
-  // Features
-  const grid = h('div',{className:'feat-grid'});
-  [{i:"🏢",t:"건축물 현황",d:"서식 1.1 자동완성"},{i:"🧯",t:"소방시설",d:"서식 1.4 체크리스트"},{i:"🚪",t:"피난·방화",d:"서식 1.5 자동완성"},{i:"📥",t:"즉시 다운로드",d:"텍스트 파일 생성"}].forEach(f => {
-    const c = h('div',{className:'feat-card'});
-    c.appendChild(h('div',{className:'feat-icon'},f.i));
-    c.appendChild(h('div',{className:'feat-title'},f.t));
-    c.appendChild(h('div',{className:'feat-desc'},f.d));
-    grid.appendChild(c);
-  });
-  el.appendChild(grid);
-
-  // Info
-  el.appendChild(h('div',{className:'info-box green',style:{marginTop:'16px'}},
-    h('div',null,
-      h('strong',null,'📌 작성 대상'), h('br'),
-      '「화재의 예방 및 안전관리에 관한 법률」 제24조에 따른 소방계획서의 핵심 서식 3종(건축물현황, 소방시설, 피난·방화)을 안내에 따라 입력하면 자동으로 문서를 생성합니다.'
-    )
-  ));
-  el.appendChild(h('div',{className:'info-box orange'},
-    h('div',null,
-      h('strong',null,'⚠️ 유의사항'), h('br'),
-      '본 도구는 소방계획서 작성을 보조하는 참고용 도구입니다. 최종 소방계획서는 반드시 관할 소방서 및 관련 법규에 따라 확인·보완하시기 바랍니다.'
-    )
-  ));
-
-  // Feedback banner
-  const fb = h('div',{className:'feedback-banner'});
-  fb.appendChild(h('h3',null,'💬 사용 후 피드백을 남겨주세요!'));
-  fb.appendChild(h('p',null,'여러분의 의견이 더 나은 도구를 만드는 데 큰 도움이 됩니다'));
-  const fbBtn = h('a',{className:'feedback-btn', href:GOOGLE_FORM_URL, target:'_blank'},'📝 피드백 설문 참여하기 (1분)');
-  fb.appendChild(fbBtn);
-  el.appendChild(fb);
-
-  return el;
-}
-
-function renderStep1() {
-  const el = h('div');
-  el.appendChild(h('div',{className:'section-title'},'🏢 서식 1.1 건축물 일반현황'));
-  el.appendChild(h('div',{className:'section-desc'},'건축물대장과 실제 현황을 참고하여 작성합니다'));
-
-  // Basic
-  const c1 = h('div',{className:'card'});
-  c1.appendChild(h('div',{className:'card-title'},'기본 정보'));
-  c1.appendChild(makeField('명칭 *', building.name, v=>{building.name=v;renderNav();}, {ph:'예: ○○아파트'}));
-  c1.appendChild(makeField('도로명 주소 *', building.address, v=>{building.address=v;renderNav();}, {ph:'예: 서울특별시 구로구 ...'}));
-  let r1 = h('div',{className:'row'});
-  r1.appendChild(makeField('대표자(책임자)', building.rep, v=>building.rep=v, {half:true,ph:'성명'}));
-  r1.appendChild(makeField('연락처', building.repTel, v=>building.repTel=v, {half:true,ph:'000-0000-0000'}));
-  c1.appendChild(r1);
-  let r2 = h('div',{className:'row'});
-  r2.appendChild(makeField('소방안전관리자', building.sm, v=>building.sm=v, {half:true,ph:'성명'}));
-  r2.appendChild(makeField('연락처', building.smTel, v=>building.smTel=v, {half:true,ph:'000-0000-0000'}));
-  c1.appendChild(r2);
-  el.appendChild(c1);
-
-  // Facility
-  const c2 = h('div',{className:'card'});
-  c2.appendChild(h('div',{className:'card-title'},'시설 현황 (건축물대장 참조)'));
-  let r3 = h('div',{className:'row'});
-  let gc = h('div',{className:'col'});
-  gc.appendChild(makeSelect('대상물 급수', building.grade, ['특급','1급','2급','3급'], v=>building.grade=v));
-  r3.appendChild(gc);
-  let ac = h('div',{className:'col'});
-  ac.appendChild(makeField('사용승인일', building.approval, v=>building.approval=v, {ph:'2020.06.30'}));
-  r3.appendChild(ac);
-  c2.appendChild(r3);
-  let r4 = h('div',{className:'row'});
-  r4.appendChild(makeField('연면적 (㎡)', building.area, v=>building.area=v, {half:true,type:'number'}));
-  r4.appendChild(makeField('건축면적 (㎡)', building.bldgArea, v=>building.bldgArea=v, {half:true,type:'number'}));
-  c2.appendChild(r4);
-  let r5 = h('div',{className:'row'});
-  r5.appendChild(makeField('지하 층수', building.uf, v=>building.uf=v, {half:true,type:'number'}));
-  r5.appendChild(makeField('지상 층수', building.af, v=>building.af=v, {half:true,type:'number'}));
-  c2.appendChild(r5);
-  let r6 = h('div',{className:'row'});
-  r6.appendChild(makeField('높이 (m)', building.height, v=>building.height=v, {half:true,type:'number'}));
-  let sc = h('div',{className:'col'});
-  sc.appendChild(makeSelect('구조', building.structure, ['철근콘크리트','철골철근콘크리트','철골조','벽돌조','기타'], v=>building.structure=v));
-  r6.appendChild(sc);
-  c2.appendChild(r6);
-  el.appendChild(c2);
-
-  // Elevator
-  const c3 = h('div',{className:'card'});
-  c3.appendChild(h('div',{className:'card-title'},'승강기'));
-  const er = h('div',{className:'row'});
-  er.appendChild(makeCheck('승용', building.elev.passenger, v=>building.elev.passenger=v));
-  er.appendChild(makeCheck('비상용', building.elev.emergency, v=>building.elev.emergency=v));
-  er.appendChild(makeCheck('피난용', building.elev.evacuation, v=>building.elev.evacuation=v));
-  c3.appendChild(er);
-  el.appendChild(c3);
-
-  // Parking
-  const c4 = h('div',{className:'card'});
-  c4.appendChild(h('div',{className:'card-title'},'주차장'));
-  const pr = h('div',{className:'row'});
-  pr.appendChild(makeCheck('옥내', building.park.indoor, v=>building.park.indoor=v));
-  pr.appendChild(makeCheck('옥외', building.park.outdoor, v=>building.park.outdoor=v));
-  pr.appendChild(makeCheck('전기차충전소', building.park.ev, v=>building.park.ev=v));
-  c4.appendChild(pr);
-  el.appendChild(c4);
-
-  // Stairs
-  const c5 = h('div',{className:'card'});
-  c5.appendChild(h('div',{className:'card-title'},'계단'));
-  const sr = h('div',{className:'row',style:{flexWrap:'wrap'}});
-  [['special','특별피난계단'],['direct','직통계단'],['evac','피난계단'],['outdoor','옥외계단']].forEach(([k,v])=>{
-    sr.appendChild(makeCheck(v, building.stair[k], val=>building.stair[k]=val));
-  });
-  c5.appendChild(sr);
-  el.appendChild(c5);
-
-  // Operation
-  const c6 = h('div',{className:'card'});
-  c6.appendChild(h('div',{className:'card-title'},'운영 현황'));
-  let r7 = h('div',{className:'row'});
-  r7.appendChild(makeField('근무인원 (명)', building.workers, v=>building.workers=v, {half:true,type:'number'}));
-  r7.appendChild(makeField('거주인원 (명)', building.residents, v=>building.residents=v, {half:true,type:'number'}));
-  c6.appendChild(r7);
-  c6.appendChild(makeField('최대수용인원 (명)', building.maxCap, v=>building.maxCap=v, {type:'number'}));
-  el.appendChild(c6);
-
-  // Insurance
-  const c7 = h('div',{className:'card'});
-  c7.appendChild(h('div',{className:'card-title'},'화재보험'));
-  let r8 = h('div',{className:'row'});
-  r8.appendChild(makeField('보험사', building.insCompany, v=>building.insCompany=v, {half:true,ph:'○○보험'}));
-  r8.appendChild(makeField('가입기간', building.insPeriod, v=>building.insPeriod=v, {half:true,ph:'2025.01~2025.12'}));
-  c7.appendChild(r8);
-  c7.appendChild(makeField('가입금액', building.insAmount, v=>building.insAmount=v, {ph:'대인 0원, 대물 0원'}));
-  el.appendChild(c7);
-
-  return el;
-}
-
-function renderStep2() {
-  const el = h('div');
-  el.appendChild(h('div',{className:'section-title'},'🏗️ 서식 1.2.2 공동주택 세부현황'));
-  el.appendChild(h('div',{className:'section-desc'},'동별 세부현황을 작성합니다'));
-
-  dongs.forEach((d, i) => {
-    const dc = h('div',{className:'dong-card'});
-    const dh = h('div',{className:'dong-header'});
-    dh.appendChild(h('span',{className:'dong-title'}, d.name||`${i+1}번째 동`));
-    if (dongs.length > 1) {
-      const rb = h('button',{className:'btn-remove'}, '삭제');
-      rb.addEventListener('click', ()=>{ dongs.splice(i,1); render(); });
-      dh.appendChild(rb);
-    }
-    dc.appendChild(dh);
-
-    let r1=h('div',{className:'row'});
-    r1.appendChild(makeField('동 명칭',d.name,v=>{dongs[i].name=v;},{half:true,ph:'101동'}));
-    r1.appendChild(makeField('라인수',d.lines,v=>{dongs[i].lines=v;},{half:true,type:'number'}));
-    dc.appendChild(r1);
-    let r2=h('div',{className:'row'});
-    r2.appendChild(makeField('지하 층수',d.uf,v=>{dongs[i].uf=v;},{half:true,type:'number'}));
-    r2.appendChild(makeField('지상 층수',d.af,v=>{dongs[i].af=v;},{half:true,type:'number'}));
-    dc.appendChild(r2);
-    let r3=h('div',{className:'row'});
-    r3.appendChild(makeField('연면적 (㎡)',d.area,v=>{dongs[i].area=v;},{half:true,type:'number'}));
-    r3.appendChild(makeField('높이 (m)',d.height,v=>{dongs[i].height=v;},{half:true,type:'number'}));
-    dc.appendChild(r3);
-    let r4=h('div',{className:'row'});
-    r4.appendChild(makeField('세대수',d.units,v=>{dongs[i].units=v;},{half:true,type:'number'}));
-    r4.appendChild(makeField('거주인원 (명)',d.res,v=>{dongs[i].res=v;},{half:true,type:'number'}));
-    dc.appendChild(r4);
-    dc.appendChild(makeSelect('계단 유형',d.stType,['특별피난계단','피난계단','직통계단'],v=>{dongs[i].stType=v;}));
-    let r5=h('div',{className:'row'});
-    r5.appendChild(makeField('계단 개소',d.stCnt,v=>{dongs[i].stCnt=v;},{half:true,type:'number'}));
-    r5.appendChild(makeField('승용 승강기 (대)',d.eP,v=>{dongs[i].eP=v;},{half:true,type:'number'}));
-    dc.appendChild(r5);
-    let r6=h('div',{className:'row'});
-    r6.appendChild(makeField('비상용 승강기 (대)',d.eE,v=>{dongs[i].eE=v;},{half:true,type:'number'}));
-    r6.appendChild(makeField('피난용 승강기 (대)',d.eV,v=>{dongs[i].eV=v;},{half:true,type:'number'}));
-    dc.appendChild(r6);
-    el.appendChild(dc);
-  });
-
-  const ab = h('button',{className:'btn-add'},'＋ 동 추가');
-  ab.addEventListener('click', ()=>{ dongs.push({name:`${100+dongs.length+1}동`,uf:"",af:"",area:"",height:"",lines:"",units:"",res:"",stType:"특별피난계단",stCnt:"",eP:"",eE:"",eV:""}); render(); });
-  el.appendChild(ab);
-  return el;
-}
-
-function renderStep3() {
-  const el = h('div');
-  el.appendChild(h('div',{className:'section-title'},'🧯 서식 1.4 소방시설 현황'));
-  el.appendChild(h('div',{className:'section-desc'},'설치된 소방시설에 체크하세요 (소방시설 설계도면 및 현장 확인)'));
-
-  Object.entries(FIRE_EQUIPMENT).forEach(([cat, items]) => {
-    const ec = h('div',{className:'equip-cat'});
-    const cnt = items.filter(i=>fireEquip[i]).length;
-    ec.appendChild(h('div',{className:'equip-cat-title'}, `${cat} (${cnt}/${items.length} 선택)`));
-    const eg = h('div',{className:'equip-grid'});
-    items.forEach(item => {
-      eg.appendChild(makeCheck(item, !!fireEquip[item], v=>{fireEquip[item]=v;}, true));
+// ─── INIT DYNAMIC SECTIONS ───
+function initEquip(){
+  const c=document.getElementById('equipList');
+  Object.entries(EQUIP).forEach(([cat,items])=>{
+    const d=document.createElement('div');d.className='cat';
+    d.innerHTML=`<div class="cat-t">${cat} <span style="font-size:11px;opacity:.7">(${items.length}개 항목)</span></div>`;
+    const g=document.createElement('div');g.className='cg';
+    items.forEach(item=>{
+      const id='eq_'+item.replace(/[\s\/·]/g,'_');
+      g.innerHTML+=`<label class="cb" onclick="togCb(this)"><input type="checkbox" data-id="${id}"><span class="cb-m">☐</span>${item}</label>`;
     });
-    ec.appendChild(eg);
-    el.appendChild(ec);
+    d.appendChild(g);c.appendChild(d);
   });
-  return el;
 }
 
-function renderStep4() {
-  const el = h('div');
-  el.appendChild(h('div',{className:'section-title'},'🚪 서식 1.5 피난·방화시설 현황'));
-  el.appendChild(h('div',{className:'section-desc'},'피난·방화시설 및 제연, 방염 관련 현황을 작성합니다'));
-
-  // Stairs
-  const c1 = h('div',{className:'card'});
-  c1.appendChild(h('div',{className:'card-title'},'피난시설 — 계단'));
-  const g1 = h('div',{className:'equip-grid'});
-  EVAC_STAIRS.forEach(i => g1.appendChild(makeCheck(i, !!evac.stairs[i], v=>{evac.stairs[i]=v;}, true)));
-  c1.appendChild(g1);
-  el.appendChild(c1);
-
-  // Facilities
-  const c2 = h('div',{className:'card'});
-  c2.appendChild(h('div',{className:'card-title'},'피난시설 — 기타'));
-  const g2 = h('div',{className:'equip-grid'});
-  EVAC_FACILITIES.forEach(i => g2.appendChild(makeCheck(i, !!evac.fac[i], v=>{evac.fac[i]=v;}, true)));
-  c2.appendChild(g2);
-  let r1=h('div',{className:'row',style:{marginTop:'12px'}});
-  r1.appendChild(makeField('피난층 위치', evac.evacFloor, v=>evac.evacFloor=v, {half:true,ph:'1층'}));
-  r1.appendChild(makeField('출입구 수 (개소)', evac.exitCnt, v=>evac.exitCnt=v, {half:true,type:'number'}));
-  c2.appendChild(r1);
-  el.appendChild(c2);
-
-  // Fire compartment
-  const c3 = h('div',{className:'card'});
-  c3.appendChild(h('div',{className:'card-title'},'방화구획'));
-  c3.appendChild(makeCheck('방화구획 해당', evac.fcExists, v=>{evac.fcExists=v;}));
-  if (evac.fcExists) {
-    c3.appendChild(h('div',{className:'equip-cat-title',style:{margin:'10px 0 8px'}},'구획 기준'));
-    const g3=h('div',{className:'equip-grid'});
-    FIRE_COMP.forEach(i=>g3.appendChild(makeCheck(i,!!evac.fc[i],v=>{evac.fc[i]=v;},true)));
-    c3.appendChild(g3);
-    c3.appendChild(h('div',{className:'equip-cat-title',style:{margin:'12px 0 8px'}},'방화구획 설비'));
-    const g4=h('div',{className:'equip-grid'});
-    FIRE_COMP_EQUIP.forEach(i=>g4.appendChild(makeCheck(i,!!evac.fe[i],v=>{evac.fe[i]=v;},true)));
-    c3.appendChild(g4);
-  }
-  el.appendChild(c3);
-
-  // Smoke control
-  const c4 = h('div',{className:'card'});
-  c4.appendChild(h('div',{className:'card-title'},'제연구획'));
-  c4.appendChild(makeCheck('제연설비 해당', evac.scExists, v=>{evac.scExists=v;}));
-  if (evac.scExists) {
-    const g5=h('div',{className:'equip-grid',style:{marginTop:'8px'}});
-    SMOKE_CTRL.forEach(i=>g5.appendChild(makeCheck(i,!!evac.sc[i],v=>{evac.sc[i]=v;},true)));
-    c4.appendChild(g5);
-  }
-  el.appendChild(c4);
-
-  // Flame retardant
-  const c5 = h('div',{className:'card'});
-  c5.appendChild(h('div',{className:'card-title'},'방염'));
-  c5.appendChild(makeCheck('방염 해당', evac.flamExists, v=>{evac.flamExists=v;}));
-  if (evac.flamExists) {
-    c5.appendChild(makeField('방염물품명', evac.flamItems, v=>evac.flamItems=v, {ph:'벽지, 커튼, 카펫 등'}));
-    c5.appendChild(makeField('위치', evac.flamLoc, v=>evac.flamLoc=v, {ph:'전층'}));
-    c5.appendChild(makeField('성적서 비치장소', evac.flamCert, v=>evac.flamCert=v, {ph:'관리사무실'}));
-  }
-  el.appendChild(c5);
-
-  // Finishing
-  const c6 = h('div',{className:'card'});
-  c6.appendChild(h('div',{className:'card-title'},'내부마감재료'));
-  const g6=h('div',{className:'equip-grid'});
-  FINISHING.forEach(i=>g6.appendChild(makeCheck(i,!!evac.fin[i],v=>{evac.fin[i]=v;},true)));
-  c6.appendChild(g6);
-  el.appendChild(c6);
-  return el;
+function makeDongHtml(idx){
+  const n=100+idx+1;
+  return `<div class="dong" id="dong_${idx}">
+<div class="dong-h"><span class="dong-t" id="dong_title_${idx}">${n}동</span>${idx>0?`<button class="btn-rm" onclick="rmDong(${idx})">삭제</button>`:''}</div>
+<div class="row"><div class="fg"><label>동 명칭</label><input data-dong="${idx}" data-f="name" value="${n}동" oninput="document.getElementById('dong_title_${idx}').textContent=this.value"></div>
+<div class="fg"><label>라인수</label><input data-dong="${idx}" data-f="lines" type="number"></div></div>
+<div class="row"><div class="fg"><label>지하 층수</label><input data-dong="${idx}" data-f="uf" type="number"></div>
+<div class="fg"><label>지상 층수</label><input data-dong="${idx}" data-f="af" type="number"></div></div>
+<div class="row"><div class="fg"><label>연면적 (㎡)</label><input data-dong="${idx}" data-f="area" type="number"></div>
+<div class="fg"><label>높이 (m)</label><input data-dong="${idx}" data-f="height" type="number"></div></div>
+<div class="row"><div class="fg"><label>세대수</label><input data-dong="${idx}" data-f="units" type="number"></div>
+<div class="fg"><label>거주인원 (명)</label><input data-dong="${idx}" data-f="res" type="number"></div></div>
+<div class="row"><div class="fg"><label>계단 유형</label><select data-dong="${idx}" data-f="stType"><option>특별피난계단</option><option>피난계단</option><option>직통계단</option></select></div>
+<div class="fg"><label>계단 개소</label><input data-dong="${idx}" data-f="stCnt" type="number"></div></div>
+<div class="row"><div class="fg"><label>승용 승강기(대)</label><input data-dong="${idx}" data-f="eP" type="number"></div>
+<div class="fg"><label>비상용 승강기(대)</label><input data-dong="${idx}" data-f="eE" type="number"></div></div>
+</div>`;
 }
 
-function generateReport() {
-  const pick = (obj) => Object.entries(obj||{}).filter(([,v])=>v).map(([k])=>k);
-  const eqList = pick(fireEquip);
-  const st = pick(evac.stairs); const fac = pick(evac.fac);
-  const fc = pick(evac.fc); const fe = pick(evac.fe);
-  const sc = pick(evac.sc); const fin = pick(evac.fin);
+function addDong(){
+  const list=document.getElementById('dongList');
+  const d=document.createElement('div');
+  d.innerHTML=makeDongHtml(dongCount);
+  list.appendChild(d.firstElementChild);
+  dongCount++;
+}
+function rmDong(idx){
+  const el=document.getElementById('dong_'+idx);
+  if(el)el.remove();
+}
+function initDongs(){
+  document.getElementById('dongList').innerHTML=makeDongHtml(0);
+}
 
-  let r = "";
-  r += "═══════════════════════════════════════════\n";
-  r += `    [${building.name||'○○아파트'}] 소방계획서\n`;
-  r += `    작성일자: ${new Date().toLocaleDateString("ko-KR")}\n`;
-  r += "═══════════════════════════════════════════\n\n";
-  r += "┌──────────────────────────────────────┐\n";
-  r += "│ 결재 │소방안전관리자│ 관리소장 │입주자대표│\n";
-  r += "│      │             │          │          │\n";
-  r += "└──────────────────────────────────────┘\n\n";
+// ─── DATA COLLECTION ───
+function val(id){return(document.getElementById(id)||{}).value||'';}
+function chk(dataId){const el=document.querySelector(`[data-id="${dataId}"]`);return el?el.checked:false;}
+function chkList(prefix,labels){return labels.filter((_,i)=>chk(prefix+(i+1))).join(', ')||'없음';}
 
-  r += "━━━ 서식 1.1 건축물 일반현황 ━━━\n\n";
-  r += `명    칭: ${building.name}\n`;
-  r += `도로명주소: ${building.address}\n`;
-  r += `대표자: ${building.rep} (${building.repTel})\n`;
-  r += `소방안전관리자: ${building.sm} (${building.smTel})\n\n`;
-  r += `[시설현황]\n`;
-  r += `대상물 급수: ${building.grade}  |  주용도: ${building.use}\n`;
-  r += `사용승인일: ${building.approval}\n`;
-  r += `연면적: ${building.area}㎡  |  건축면적: ${building.bldgArea}㎡\n`;
-  r += `층수: 지하 ${building.uf}층 / 지상 ${building.af}층\n`;
-  r += `높이: ${building.height}m  |  구조: ${building.structure}  |  지붕: ${building.roof}\n`;
-  const el = []; if(building.elev.passenger)el.push("승용"); if(building.elev.emergency)el.push("비상용"); if(building.elev.evacuation)el.push("피난용");
-  r += `승강기: ${el.length?el.join(", "):"없음"}\n`;
-  const pk = []; if(building.park.indoor)pk.push("옥내"); if(building.park.outdoor)pk.push("옥외"); if(building.park.ev)pk.push("전기차충전소");
-  r += `주차장: ${pk.length?pk.join(", "):"없음"}\n`;
-  const sArr=[]; if(building.stair.special)sArr.push("특별피난계단"); if(building.stair.direct)sArr.push("직통계단"); if(building.stair.evac)sArr.push("피난계단"); if(building.stair.outdoor)sArr.push("옥외계단");
-  r += `계단: ${sArr.length?sArr.join(", "):"없음"}\n\n`;
-  r += `[운영현황]\n`;
-  r += `근무인원: ${building.workers}명 | 거주인원: ${building.residents}명 | 최대수용: ${building.maxCap}명\n`;
-  if (building.insCompany) r += `화재보험: ${building.insCompany} (${building.insPeriod}) ${building.insAmount}\n`;
-
-  r += "\n\n━━━ 서식 1.2.2 공동주택 세부현황 ━━━\n\n";
-  dongs.forEach(d => {
-    r += `${d.name}\n`;
-    r += `  층수: 지하${d.uf}층/지상${d.af}층 | 연면적: ${d.area}㎡ | 높이: ${d.height}m\n`;
-    r += `  라인수: ${d.lines} | 세대수: ${d.units}세대 (거주: ${d.res}명)\n`;
-    r += `  계단: ${d.stType} ${d.stCnt}개소\n`;
-    r += `  승강기: 승용${d.eP||0}대, 비상용${d.eE||0}대, 피난용${d.eV||0}대\n`;
-    r += "──────────────────────────────\n";
+function getDongs(){
+  const result=[];
+  document.querySelectorAll('.dong').forEach(el=>{
+    const d={};
+    el.querySelectorAll('[data-f]').forEach(inp=>{
+      d[inp.dataset.f]=inp.value;
+    });
+    result.push(d);
   });
+  return result;
+}
 
-  r += "\n\n━━━ 서식 1.4 소방시설 현황 ━━━\n\n";
-  r += `■ 대상명: ${building.name}\n\n`;
-  Object.entries(FIRE_EQUIPMENT).forEach(([cat,items])=>{
-    r += `[${cat}]\n`;
-    items.forEach(i => r += `  ${fireEquip[i]?"☑":"☐"} ${i}\n`);
-    r += "\n";
+function getEquipChecked(){
+  const result={};
+  Object.entries(EQUIP).forEach(([cat,items])=>{
+    result[cat]=items.filter(item=>{
+      const id='eq_'+item.replace(/[\s\/·]/g,'_');
+      return chk(id);
+    });
   });
+  return result;
+}
 
-  r += "\n━━━ 서식 1.5 피난·방화시설 현황 ━━━\n\n";
-  r += `[피난시설]\n`;
-  r += `  계단: ${st.length?st.join(", "):"없음"}\n`;
-  r += `  기타: ${fac.length?fac.join(", "):"없음"}\n`;
-  r += `  피난층: ${evac.evacFloor} | 출입구: ${evac.exitCnt}개소\n\n`;
-  r += `[방화구획] ${evac.fcExists?"해당":"미해당"}\n`;
-  if(evac.fcExists){ r += `  기준: ${fc.length?fc.join(", "):"없음"}\n  설비: ${fe.length?fe.join(", "):"없음"}\n`; }
-  r += `\n[제연구획] ${evac.scExists?"해당":"미해당"}\n`;
-  if(evac.scExists) r += `  구역: ${sc.length?sc.join(", "):"없음"}\n`;
-  r += `\n[방염] ${evac.flamExists?"해당":"미해당"}\n`;
-  if(evac.flamExists) r += `  물품: ${evac.flamItems}\n  위치: ${evac.flamLoc}\n  성적서: ${evac.flamCert}\n`;
-  r += `\n[내부마감재료]: ${fin.length?fin.join(", "):"없음"}\n`;
+// ─── NAVIGATION ───
+function goStep(n){
+  if(n<0||n>=STEPS.length)return;
+  if(n===1&&!val('b_name')&&step===0){/* allow going to step 1 from 0 without validation */}
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  document.getElementById('p'+n).classList.add('show');
+  step=n;
+  renderNav();
+  if(n===5)renderPreview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-  r += "\n\n═══════════════════════════════════════════\n";
-  r += "  NOUnsafe — AI 기반 안전관리 플랫폼\n";
-  r += "  https://cafe.naver.com/114er\n";
-  r += "  피드백: " + GOOGLE_FORM_URL + "\n";
-  r += "═══════════════════════════════════════════\n";
+function renderNav(){
+  // Stepper
+  const sn=document.getElementById('snav');
+  sn.innerHTML='';
+  STEPS.forEach((s,i)=>{
+    const cls='si'+(i===step?' on':'')+(i<step?' done':'');
+    sn.innerHTML+=`<div class="${cls}" onclick="${i<=step?'goStep('+i+')':'void(0)'}"><span class="si-i">${i<step?'✅':s.i}</span><span class="si-l">${s.l}</span></div>`;
+  });
+  // Progress
+  document.getElementById('progFill').style.width=(step/5*100)+'%';
+  document.getElementById('progTxt').textContent=step+'/5';
+  // Buttons
+  const bn=document.getElementById('bnav');
+  bn.innerHTML='';
+  if(step>0)bn.innerHTML+=`<button class="btn btn2" onclick="goStep(${step-1})">← 이전</button>`;
+  if(step<5)bn.innerHTML+=`<button class="btn btn1" onclick="goStep(${step+1})">${step===0?'작성 시작하기 →':'다음 →'}</button>`;
+}
+
+// ─── REPORT TEXT ───
+function genReport(){
+  const eq=getEquipChecked();const ds=getDongs();
+  const elevs=[chk('el_pass')&&'승용',chk('el_emer')&&'비상용',chk('el_evac')&&'피난용'].filter(Boolean).join(', ')||'없음';
+  const parks=[chk('pk_in')&&'옥내',chk('pk_out')&&'옥외',chk('pk_ev')&&'전기차충전소'].filter(Boolean).join(', ')||'없음';
+  const stairs=[chk('st_spe')&&'특별피난계단',chk('st_dir')&&'직통계단',chk('st_eva')&&'피난계단',chk('st_out')&&'옥외계단'].filter(Boolean).join(', ')||'없음';
+  let r=`═══════════════════════════════════════\n    [${val('b_name')||'○○아파트'}] 소방계획서\n    작성일: ${new Date().toLocaleDateString('ko-KR')}\n═══════════════════════════════════════\n\n`;
+  r+=`━━━ 서식 1.1 건축물 일반현황 ━━━\n\n명칭: ${val('b_name')}\n주소: ${val('b_addr')}\n대표자: ${val('b_rep')} (${val('b_repTel')})\n소방안전관리자: ${val('b_sm')} (${val('b_smTel')})\n\n`;
+  r+=`급수: ${val('b_grade')} | 사용승인일: ${val('b_approval')}\n연면적: ${val('b_area')}㎡ | 건축면적: ${val('b_bArea')}㎡\n층수: 지하${val('b_uf')}층/지상${val('b_af')}층 | 높이: ${val('b_height')}m\n구조: ${val('b_struct')}\n승강기: ${elevs}\n주차장: ${parks}\n계단: ${stairs}\n\n`;
+  r+=`근무: ${val('b_wk')}명 | 거주: ${val('b_res')}명 | 최대: ${val('b_max')}명\n보험: ${val('b_ins')} (${val('b_insP')})\n\n`;
+  r+=`━━━ 서식 1.2.2 동별 세부현황 ━━━\n\n`;
+  ds.forEach(d=>{r+=`${d.name||'동'}: 지하${d.uf||0}/지상${d.af||0}층, ${d.area||0}㎡, ${d.height||0}m, ${d.lines||0}라인, ${d.units||0}세대(${d.res||0}명), ${d.stType} ${d.stCnt||0}개소, 승강기 승용${d.eP||0}/비상${d.eE||0}대\n`;});
+  r+=`\n━━━ 서식 1.4 소방시설 현황 ━━━\n\n`;
+  Object.entries(eq).forEach(([cat,items])=>{r+=`[${cat}] ${items.length?items.join(', '):'없음'}\n`;});
+  r+=`\n━━━ 서식 1.5 피난·방화시설 ━━━\n\n`;
+  const evStairs=[chk('ev_s1')&&'직통',chk('ev_s2')&&'피난',chk('ev_s3')&&'특별피난',chk('ev_s4')&&'옥외'].filter(Boolean).join(', ')||'없음';
+  const evFac=[chk('ev_f1')&&'대피공간',chk('ev_f2')&&'경량칸막이',chk('ev_f3')&&'피난안전구역',chk('ev_f4')&&'옥상광장',chk('ev_f5')&&'헬리포트'].filter(Boolean).join(', ')||'없음';
+  r+=`피난계단: ${evStairs}\n기타시설: ${evFac}\n피난층: ${val('ev_floor')} | 출입구: ${val('ev_exit')}개소\n`;
+  const fc=[chk('fc_area')&&'면적별',chk('fc_floor')&&'층별',chk('fc_use')&&'용도별'].filter(Boolean).join(', ')||'없음';
+  const fe=[chk('fe_door')&&'방화문',chk('fe_shut')&&'방화셔터',chk('fe_scrn')&&'방화스크린'].filter(Boolean).join(', ')||'없음';
+  r+=`방화구획: ${fc} | 설비: ${fe}\n`;
+  const sc=[chk('sc_room')&&'거실제연',chk('sc_hall')&&'전실제연'].filter(Boolean).join(', ')||'없음';
+  r+=`제연: ${sc}\n방염: ${val('fl_items')} (${val('fl_loc')})\n`;
+  const fn=[chk('fn_1')&&'불연',chk('fn_2')&&'준불연',chk('fn_3')&&'난연'].filter(Boolean).join(', ')||'없음';
+  r+=`마감재료: ${fn}\n\n═══ NOUnsafe · cafe.naver.com/114er ═══\n`;
   return r;
 }
 
-function renderStep5() {
-  const el = h('div');
-  el.appendChild(h('div',{className:'section-title'},'📋 소방계획서 미리보기'));
-  el.appendChild(h('div',{className:'section-desc'},'작성된 내용을 확인하고 다운로드하세요'));
+function renderPreview(){
+  const ds=getDongs();const eq=getEquipChecked();
+  const eqCnt=Object.values(eq).reduce((s,a)=>s+a.length,0);
+  const totalUnits=ds.reduce((s,d)=>s+(parseInt(d.units)||0),0);
+  document.getElementById('rstats').innerHTML=[
+    {l:'건축물',v:val('b_name')||'-'},{l:'동 수',v:ds.length+'개동'},
+    {l:'소방시설',v:eqCnt+'종'},{l:'총 세대',v:totalUnits+'세대'}
+  ].map(s=>`<div class="st"><div class="st-l">${s.l}</div><div class="st-v">${s.v}</div></div>`).join('');
+  document.getElementById('preview').textContent=genReport();
+}
 
-  // Stats
-  const eqCnt = Object.values(fireEquip).filter(v=>v).length;
-  const totalUnits = dongs.reduce((s,d)=>s+(parseInt(d.units)||0),0);
-  const sc = h('div',{className:'card',style:{background:'var(--success-bg)',borderColor:'#A5D6A7'}});
-  const sr = h('div',{className:'stats-row'});
-  [{l:"건축물",v:building.name||"-"},{l:"동 수",v:dongs.length+"개동"},{l:"소방시설",v:eqCnt+"종"},{l:"총 세대",v:totalUnits+"세대"}].forEach(s=>{
-    const st=h('div',{className:'stat'});
-    st.appendChild(h('div',{className:'stat-label'},s.l));
-    st.appendChild(h('div',{className:'stat-value'},s.v));
-    sr.appendChild(st);
-  });
-  sc.appendChild(sr);
-  el.appendChild(sc);
+// ─── DOWNLOADS ───
+function downloadTxt(){
+  const blob=new Blob(["\uFEFF"+genReport()],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`${val('b_name')||'공동주택'}_소방계획서_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
 
-  // Preview
-  const report = generateReport();
-  el.appendChild(h('div',{className:'preview-box'}, report));
+async function downloadDocx(){
+  const ld=document.getElementById('loading');ld.classList.add('on');
+  try{
+    const{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,BorderStyle,HeadingLevel}=docx;
+    const ds=getDongs();const eq=getEquipChecked();
+    const bName=val('b_name')||'○○아파트';
+    const today=new Date().toLocaleDateString('ko-KR');
 
-  // Download button
-  const dlBtn = h('button',{className:'btn btn-success',style:{width:'100%',marginTop:'16px'}},'📥 텍스트 파일 다운로드');
-  dlBtn.addEventListener('click', ()=>{
-    const blob = new Blob(["\uFEFF"+report], {type:"text/plain;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${building.name||'공동주택'}_소방계획서_${new Date().toISOString().slice(0,10)}.txt`;
+    const elevs=[chk('el_pass')&&'승용',chk('el_emer')&&'비상용',chk('el_evac')&&'피난용'].filter(Boolean).join(', ')||'없음';
+    const parks=[chk('pk_in')&&'옥내',chk('pk_out')&&'옥외',chk('pk_ev')&&'전기차충전소'].filter(Boolean).join(', ')||'없음';
+    const bStairs=[chk('st_spe')&&'특별피난계단',chk('st_dir')&&'직통계단',chk('st_eva')&&'피난계단',chk('st_out')&&'옥외계단'].filter(Boolean).join(', ')||'없음';
+
+    function txt(t,opts={}){return new Paragraph({children:[new TextRun({text:t,bold:opts.bold,size:opts.size||24,font:'맑은 고딕'})],spacing:{after:opts.after||100},alignment:opts.align});}
+    function heading(t,level){return new Paragraph({text:t,heading:level||HeadingLevel.HEADING_1,spacing:{before:300,after:150}});}
+    function row2(a,b){
+      const bd={top:{style:BorderStyle.SINGLE,size:1},bottom:{style:BorderStyle.SINGLE,size:1},left:{style:BorderStyle.SINGLE,size:1},right:{style:BorderStyle.SINGLE,size:1}};
+      return new TableRow({children:[
+        new TableCell({children:[txt(a,{bold:true,size:20})],width:{size:30,type:WidthType.PERCENTAGE},borders:bd,shading:{fill:"F0F0F0"}}),
+        new TableCell({children:[txt(b,{size:20})],width:{size:70,type:WidthType.PERCENTAGE},borders:bd})
+      ]});
+    }
+
+    const children=[];
+    // Title
+    children.push(txt(`[${bName}] 소방계획서`,{bold:true,size:36,align:AlignmentType.CENTER,after:50}));
+    children.push(txt(`작성일자: ${today}`,{size:20,align:AlignmentType.CENTER,after:200}));
+
+    // 1.1
+    children.push(heading('서식 1.1 건축물 일반현황'));
+    children.push(new Table({rows:[
+      row2('명 칭',bName),row2('도로명주소',val('b_addr')),
+      row2('대표자',`${val('b_rep')} (${val('b_repTel')})`),
+      row2('소방안전관리자',`${val('b_sm')} (${val('b_smTel')})`),
+      row2('대상물 급수',val('b_grade')),row2('사용승인일',val('b_approval')),
+      row2('연면적',`${val('b_area')} ㎡`),row2('건축면적',`${val('b_bArea')} ㎡`),
+      row2('층수',`지하 ${val('b_uf')}층 / 지상 ${val('b_af')}층`),
+      row2('높이',`${val('b_height')} m`),row2('구조',val('b_struct')),
+      row2('승강기',elevs),row2('주차장',parks),row2('계단',bStairs),
+      row2('근무인원',`${val('b_wk')}명`),row2('거주인원',`${val('b_res')}명`),
+      row2('최대수용인원',`${val('b_max')}명`),
+      row2('화재보험',`${val('b_ins')} (${val('b_insP')})`),
+    ],width:{size:100,type:WidthType.PERCENTAGE}}));
+
+    // 1.2.2
+    children.push(heading('서식 1.2.2 공동주택 세부현황'));
+    ds.forEach(d=>{
+      children.push(new Table({rows:[
+        row2('동',d.name||''),row2('층수',`지하${d.uf||0}층 / 지상${d.af||0}층`),
+        row2('연면적',`${d.area||0} ㎡`),row2('높이',`${d.height||0} m`),
+        row2('라인수',d.lines||''),row2('세대수 (거주인원)',`${d.units||0}세대 (${d.res||0}명)`),
+        row2('계단',`${d.stType} ${d.stCnt||0}개소`),
+        row2('승강기',`승용 ${d.eP||0}대, 비상용 ${d.eE||0}대`),
+      ],width:{size:100,type:WidthType.PERCENTAGE}}));
+      children.push(txt('',{after:100}));
+    });
+
+    // 1.4
+    children.push(heading('서식 1.4 소방시설 현황'));
+    Object.entries(eq).forEach(([cat,items])=>{
+      children.push(txt(`[${cat}]`,{bold:true,size:22,after:50}));
+      if(items.length)children.push(txt('  ☑ '+items.join('\n  ☑ '),{size:20}));
+      else children.push(txt('  (해당 없음)',{size:20}));
+    });
+
+    // 1.5
+    children.push(heading('서식 1.5 피난·방화시설 현황'));
+    const evStairs=[chk('ev_s1')&&'직통계단',chk('ev_s2')&&'피난계단',chk('ev_s3')&&'특별피난계단',chk('ev_s4')&&'옥외계단'].filter(Boolean).join(', ')||'없음';
+    const evFac=[chk('ev_f1')&&'대피공간',chk('ev_f2')&&'경량칸막이',chk('ev_f3')&&'피난안전구역',chk('ev_f4')&&'옥상광장',chk('ev_f5')&&'헬리포트'].filter(Boolean).join(', ')||'없음';
+    const fc=[chk('fc_area')&&'면적별',chk('fc_floor')&&'층별',chk('fc_use')&&'용도별'].filter(Boolean).join(', ')||'없음';
+    const fe=[chk('fe_door')&&'방화문',chk('fe_shut')&&'방화셔터',chk('fe_scrn')&&'방화스크린'].filter(Boolean).join(', ')||'없음';
+    const sc=[chk('sc_room')&&'거실 제연',chk('sc_hall')&&'전실 제연'].filter(Boolean).join(', ')||'없음';
+    const fn=[chk('fn_1')&&'불연재료',chk('fn_2')&&'준불연재료',chk('fn_3')&&'난연재료'].filter(Boolean).join(', ')||'없음';
+
+    children.push(new Table({rows:[
+      row2('피난시설 — 계단',evStairs),row2('피난시설 — 기타',evFac),
+      row2('피난층',val('ev_floor')),row2('출입구',`${val('ev_exit')}개소`),
+      row2('방화구획 기준',fc),row2('방화구획 설비',fe),
+      row2('제연구획',sc),
+      row2('방염물품',val('fl_items')),row2('방염 위치',val('fl_loc')),
+      row2('성적서 비치',val('fl_cert')),row2('내부마감재료',fn),
+    ],width:{size:100,type:WidthType.PERCENTAGE}}));
+
+    children.push(txt(''));
+    children.push(txt('NOUnsafe — AI 기반 안전관리 플랫폼 · cafe.naver.com/114er',{size:18,align:AlignmentType.CENTER}));
+
+    const doc=new Document({sections:[{properties:{},children}]});
+    const blob=await Packer.toBlob(doc);
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`${bName}_소방계획서_${new Date().toISOString().slice(0,10)}.docx`;
     a.click();
-    URL.revokeObjectURL(url);
-  });
-  el.appendChild(dlBtn);
-
-  // Feedback CTA
-  const fb = h('div',{className:'feedback-banner',style:{marginTop:'20px'}});
-  fb.appendChild(h('h3',null,'🙏 작성 완료! 사용 경험은 어떠셨나요?'));
-  fb.appendChild(h('p',null,'1분 설문으로 의견을 남겨주시면\n더 나은 도구를 만드는 데 큰 힘이 됩니다'));
-  const fbBtn = h('a',{className:'feedback-btn',href:GOOGLE_FORM_URL,target:'_blank'},'📝 피드백 설문 참여하기');
-  fb.appendChild(fbBtn);
-  el.appendChild(fb);
-
-  // Next features
-  el.appendChild(h('div',{className:'info-box blue',style:{marginTop:'16px'}},
-    h('div',null,
-      h('strong',null,'💡 다음 버전 예정 기능'),h('br'),
-      '• AI 기반 화재취약장소 자동 분석',h('br'),
-      '• 자위소방대 편성표 자동 생성 (서식 2장)',h('br'),
-      '• 피난계획 자동 작성 (서식 3장)',h('br'),
-      '• HWP/DOCX 포맷 출력 지원',h('br'),h('br'),
-      '의견이나 개선사항은 카페 댓글 또는 설문으로 남겨주세요!'
-    )
-  ));
-  return el;
+  }catch(e){alert('DOCX 생성 오류: '+e.message);console.error(e);}
+  finally{ld.classList.remove('on');}
 }
 
-// ══════════════════════════════════════════
-// MAIN RENDER
-// ══════════════════════════════════════════
-const renderers = [renderStep0, renderStep1, renderStep2, renderStep3, renderStep4, renderStep5];
-
-function canProceed() {
-  if (currentStep===1) return building.name && building.address;
-  if (currentStep===2) return dongs.length>0 && dongs[0].name;
-  return true;
-}
-
-function renderStepper() {
-  const stepper = $('stepper');
-  stepper.innerHTML = '';
-  STEPS.forEach((s,i)=>{
-    const cls = 'step-item' + (currentStep===i?' active':'') + (currentStep>i?' done':'');
-    const si = h('div',{className:cls});
-    si.appendChild(h('span',{className:'step-icon'}, currentStep>i?'✅':s.icon));
-    si.appendChild(h('span',{className:'step-label'}, s.label));
-    if (i<=currentStep) si.addEventListener('click', ()=>{ currentStep=i; render(); });
-    stepper.appendChild(si);
-  });
-}
-
-function renderNav() {
-  const nav = $('nav');
-  nav.innerHTML = '';
-  if (currentStep>0) {
-    const pb = h('button',{className:'btn btn-secondary'},'← 이전');
-    pb.addEventListener('click', ()=>{ currentStep--; render(); });
-    nav.appendChild(pb);
-  }
-  if (currentStep<STEPS.length-1) {
-    const nb = h('button',{className:'btn btn-primary'}, currentStep===0?'작성 시작하기 →':'다음 →');
-    if(!canProceed()) nb.disabled = true;
-    nb.addEventListener('click', ()=>{ if(canProceed()){currentStep++; render();} });
-    nav.appendChild(nb);
-  }
-}
-
-function render() {
-  const content = $('content');
-  content.innerHTML = '';
-  content.appendChild(renderers[currentStep]());
-  renderStepper();
-  renderNav();
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-// Init
-render();
+// ─── INIT ───
+initEquip();
+initDongs();
+// Set initial checked states for pre-checked items
+document.querySelectorAll('.cb input:checked').forEach(inp=>{
+  const lbl=inp.closest('.cb');
+  if(lbl){lbl.classList.add('on');lbl.querySelector('.cb-m').textContent='☑';}
+});
+renderNav();
 </script>
 </body>
 </html>
